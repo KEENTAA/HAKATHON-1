@@ -1,0 +1,15 @@
+services:
+  arca-frontend:
+    build:
+      context: ./hackaton-arca-frontend/
+      dockerfile: Dockerfile
+    container_name: arca-frontend
+    restart: always
+    ports:
+      - "4200:80"
+    networks:
+      - arca-network
+
+networks:
+  arca-network:
+    driver: bridge
