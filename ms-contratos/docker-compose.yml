@@ -1,0 +1,90 @@
+# ============================================================================
+# docker-compose.yml - Orquestación de Contenedores ms-contratos
+# Servicios: ms_contratos_db (PostgreSQL) + ms_contratos_app (FastAPI)
+# Red: arca_network (creada automáticamente o external si existe)
+# Puertos: App 8002, DB 5434
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ========================================================================
+  # Servicio 1: Base de Datos PostgreSQL 15
+  # ========================================================================
+  ms_contratos_db:
+    image: postgres:15-alpine
+    container_name: ms_contratos_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-arca_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-arca_password}
+      POSTGRES_DB: ${DB_NAME:-db_contratos}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${DB_PORT:-5434}:5432"
+    volumes:
+      # Volumen persistente para datos de la BD
+      - ms_contratos_postgres_data:/var/lib/postgresql/data
+    networks:
+      - arca_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-arca_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # Servicio 2: Microservicio de Contratos (FastAPI)
+  # ========================================================================
+  ms_contratos_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ms_contratos_app
+    environment:
+      # Credenciales de Base de Datos
+      DB_USER: ${DB_USER:-arca_user}
+      DB_PASSWORD: ${DB_PASSWORD:-arca_password}
+      DB_HOST: ms_contratos_db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-db_contratos}
+      
+      # Configuración de la aplicación
+      APP_PORT: ${APP_PORT:-8002}
+      DEBUG: ${DEBUG:-False}
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "${APP_PORT:-8002}:8002"
+    depends_on:
+      ms_contratos_db:
+        condition: service_healthy
+    networks:
+      - arca_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ============================================================================
+# Redes
+# ============================================================================
+networks:
+  arca_network:
+    # Descomenta "external: true" si la red ya existe en tu ambiente
+    # external: true
+    driver: bridge
+
+# ============================================================================
+# Volúmenes
+# ============================================================================
+volumes:
+  ms_contratos_postgres_data:
+    driver: local
