@@ -1,6 +1,7 @@
 {
   "name": "hackaton-arca-frontend",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,20 +9,6 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
-  },
-  "private": true,
-  "packageManager": "bun@1.3.5",
   "dependencies": {
     "@angular/common": "^21.0.0",
     "@angular/compiler": "^21.0.0",
@@ -29,6 +16,10 @@
     "@angular/forms": "^21.0.0",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
+    "@ngrx/signals": "^21.1.0",
+    "@primeuix/themes": "^2.0.3",
+    "primeicons": "^7.0.0",
+    "primeng": "^21.1.6",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -39,5 +30,18 @@
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
-  }
+  },
+  "prettier": {
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ],
+    "printWidth": 100,
+    "singleQuote": true
+  },
+  "packageManager": "bun@1.3.5"
 }

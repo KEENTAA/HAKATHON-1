@@ -1,1 +1,199 @@
-<p>personal works!</p>
+<h2>Personal</h2>
+
+@if (error(); as e) {
+  <p-message severity="error" [text]="e" />
+}
+
+<p-tabs [(value)]="activeTab">
+  <p-tablist>
+    <p-tab value="0">Departamentos ({{ departments().length }})</p-tab>
+    <p-tab value="1">Posiciones ({{ positions().length }})</p-tab>
+    <p-tab value="2">Empleados ({{ employeeCount() }})</p-tab>
+  </p-tablist>
+
+  <p-tabpanels>
+    <!-- ===== DEPARTAMENTOS ===== -->
+    <p-tabpanel value="0">
+      <p-card header="Departamentos">
+        <div class="toolbar">
+          <button pButton label="Nuevo" icon="pi pi-plus" (click)="openDeptDialog()" />
+        </div>
+        <p-table [value]="departments()" [loading]="loading()">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-d>
+            <tr>
+              <td>{{ d.id }}</td>
+              <td>{{ d.name }}</td>
+              <td>{{ d.description || '—' }}</td>
+              <td>
+                <button pButton label="Editar" icon="pi pi-pencil" size="small" (click)="openDeptDialog(d)" class="mr-1"></button>
+                <button pButton label="Empleados" icon="pi pi-users" size="small" (click)="loadByDept(d.id)" class="mr-1"></button>
+                <button pButton label="Eliminar" icon="pi pi-trash" size="small" severity="danger" (click)="deleteDept(d.id)"></button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabpanel>
+
+    <!-- ===== POSICIONES ===== -->
+    <p-tabpanel value="1">
+      <p-card header="Posiciones">
+        <div class="toolbar">
+          <button pButton label="Nueva" icon="pi pi-plus" (click)="openPosDialog()" />
+        </div>
+        <p-table [value]="positions()" [loading]="loading()">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Departamento</th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-p>
+            <tr>
+              <td>{{ p.id }}</td>
+              <td>{{ p.name }}</td>
+              <td>{{ p.description || '—' }}</td>
+              <td>{{ deptName(p.department_id) }}</td>
+              <td>
+                <button pButton label="Editar" icon="pi pi-pencil" size="small" (click)="openPosDialog(p)" class="mr-1"></button>
+                <button pButton label="Eliminar" icon="pi pi-trash" size="small" severity="danger" (click)="deletePos(p.id)"></button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabpanel>
+
+    <!-- ===== EMPLEADOS ===== -->
+    <p-tabpanel value="2">
+      <p-card header="Empleados">
+        <div class="toolbar">
+          <button pButton label="Nuevo" icon="pi pi-plus" (click)="openEmpDialog()" />
+        </div>
+        <p-table [value]="employees()" [loading]="loading()">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>ID</th>
+              <th>CI</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Departamento</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-e>
+            <tr>
+              <td>{{ e.id }}</td>
+              <td>{{ e.ci }}</td>
+              <td>{{ e.name }}</td>
+              <td>{{ e.email }}</td>
+              <td>{{ deptName(e.department_id) }}</td>
+              <td>
+                <p-tag [value]="e.status" [severity]="e.status === 'active' ? 'success' : 'danger'" />
+              </td>
+              <td>
+                <button pButton label="Editar" icon="pi pi-pencil" size="small" (click)="openEmpDialog(e)" class="mr-1"></button>
+                @if (e.status === 'active') {
+                  <button pButton label="Baja" icon="pi pi-ban" size="small" severity="warn" (click)="deactivate(e.id)" class="mr-1"></button>
+                }
+                <button pButton label="Eliminar" icon="pi pi-trash" size="small" severity="danger" (click)="deleteEmp(e.id)"></button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
+
+<!-- Dialog Departamento -->
+<p-dialog [(visible)]="showDeptDialog" [modal]="true" [header]="editingItem() ? 'Editar Departamento' : 'Nuevo Departamento'" [style]="{ width: '400px' }">
+  <div class="form-stack">
+    <div class="form-group">
+      <label>Nombre</label>
+      <input pInputText type="text" [(ngModel)]="deptForm.name" />
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <input pInputText type="text" [(ngModel)]="deptForm.description" />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" (click)="showDeptDialog.set(false)" [text]="true"></button>
+    <button pButton label="Guardar" (click)="saveDept()" [loading]="loading()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog Posición -->
+<p-dialog [(visible)]="showPosDialog" [modal]="true" [header]="editingItem() ? 'Editar Posición' : 'Nueva Posición'" [style]="{ width: '450px' }">
+  <div class="form-stack">
+    <div class="form-group">
+      <label>Nombre</label>
+      <input pInputText type="text" [(ngModel)]="posForm.name" />
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <input pInputText type="text" [(ngModel)]="posForm.description" />
+    </div>
+    <div class="form-group">
+      <label>Departamento</label>
+      <input pInputText type="number" [(ngModel)]="posForm.department_id" placeholder="ID (opcional)" />
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" (click)="showPosDialog.set(false)" [text]="true"></button>
+    <button pButton label="Guardar" (click)="savePos()" [loading]="loading()"></button>
+  </ng-template>
+</p-dialog>
+
+<!-- Dialog Empleado -->
+<p-dialog [(visible)]="showEmpDialog" [modal]="true" [header]="editingItem() ? 'Editar Empleado' : 'Nuevo Empleado'" [style]="{ width: '500px' }">
+  <div class="form-stack">
+    <div class="form-row">
+      <div class="form-group">
+        <label>CI</label>
+        <input pInputText type="text" [(ngModel)]="empForm.ci" />
+      </div>
+      <div class="form-group">
+        <label>Nombre</label>
+        <input pInputText type="text" [(ngModel)]="empForm.name" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Email</label>
+        <input pInputText type="email" [(ngModel)]="empForm.email" />
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input pInputText type="text" [(ngModel)]="empForm.phone" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Departamento ID</label>
+        <input pInputText type="number" [(ngModel)]="empForm.department_id" />
+      </div>
+      <div class="form-group">
+        <label>Fecha Ingreso</label>
+        <input pInputText type="date" [(ngModel)]="empForm.hire_date" />
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancelar" (click)="showEmpDialog.set(false)" [text]="true"></button>
+    <button pButton label="Guardar" (click)="saveEmp()" [loading]="loading()"></button>
+  </ng-template>
+</p-dialog>
