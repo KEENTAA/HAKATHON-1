@@ -6,6 +6,8 @@ Incluye reintentos automáticos y gestión de sesiones
 import os
 import time
 from typing import Generator
+from dotenv import load_dotenv
+load_dotenv()
 
 from sqlalchemy import create_engine, text, event
 from sqlalchemy.ext.declarative import declarative_base
