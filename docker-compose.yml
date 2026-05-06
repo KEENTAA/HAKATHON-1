@@ -1,0 +1,217 @@
+services:
+  # ========================================================================
+  # BASE DE DATOS POSTGRES PARA TODOS LOS SERVICIOS
+  # ========================================================================
+  postgres_db:
+    image: postgres:18-alpine
+    container_name: arca_postgres_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-62625054}
+      POSTGRES_DB: ${DB_NAME:-KATA}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - arca_postgres_data:/var/lib/postgresql/data
+      - ./MODULO BOLETAS/app/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - arca_global_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # MICROSERVICIO: MS-PERSONAL (puerto 8000 - solo expuesto via gateway)
+  # ========================================================================
+  ms_personal:
+    build:
+      context: ./ms-personal
+      dockerfile: Dockerfile
+    container_name: ms_personal_app
+    env_file:
+      - ./ms-personal/.env_docker
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-62625054}@postgres_db:5432/${DB_NAME:-KATA}
+      PYTHONUNBUFFERED: 1
+    # NO EXPONER PUERTO PUBLICO - solo accesible via api-gateway
+    expose:
+      - "8000"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - arca_global_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # MICROSERVICIO: MS-CONTRATOS (puerto 8002 - solo expuesto via gateway)
+  # ========================================================================
+  ms_contratos:
+    build:
+      context: ./ms-contratos
+      dockerfile: Dockerfile
+    container_name: ms_contratos_app
+    env_file:
+      - ./ms-contratos/.env_docker
+    environment:
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-62625054}
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-KATA}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-62625054}@postgres_db:5432/${DB_NAME:-KATA}
+      APP_PORT: ${MS_CONTRATOS_PORT:-8002}
+      DEBUG: ${DEBUG:-False}
+      PYTHONUNBUFFERED: 1
+    # NO EXPONER PUERTO PUBLICO - solo accesible via api-gateway
+    expose:
+      - "8002"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - arca_global_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # MICROSERVICIO: MODULO BOLETAS (puerto 8004 - solo expuesto via gateway)
+  # ========================================================================
+  modulo_boletas:
+    build:
+      context: ./MODULO BOLETAS
+      dockerfile: Dockerfile
+    container_name: modulo_boletas_app
+    env_file:
+      - ./MODULO BOLETAS/.env_docker
+    environment:
+      DB_HOST: postgres_db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-KATA}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-62625054}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-62625054}@postgres_db:5432/${DB_NAME:-KATA}
+      PYTHONUNBUFFERED: 1
+    # NO EXPONER PUERTO PUBLICO - solo accesible via api-gateway
+    expose:
+      - "8004"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - arca_global_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # MICROSERVICIO: MODULO VACACIONES (puerto 8006 - solo expuesto via gateway)
+  # ========================================================================
+  modulo_vacaciones:
+    build:
+      context: ./MODULO_VACACIONES
+      dockerfile: Dockerfile
+    container_name: modulo_vacaciones_app
+    env_file:
+      - ./MODULO_VACACIONES/.env_docker
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-62625054}@postgres_db:5432/${DB_NAME:-KATA}
+      PYTHONUNBUFFERED: 1
+    # NO EXPONER PUERTO PUBLICO - solo accesible via api-gateway
+    expose:
+      - "8006"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - arca_global_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # FRONTEND: HACKATON-ARCA-FRONTEND (puerto 4200)
+  # ========================================================================
+  frontend:
+    build:
+      context: ./hackaton-arca-frontend
+      dockerfile: Dockerfile
+    container_name: arca_frontend
+    environment:
+      NODE_ENV: production
+      API_URL: http://api-gateway:8000/api/v1
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - arca_global_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ========================================================================
+  # API GATEWAY: NGINX (puerto 8000 - ÚNICO PUNTO DE ENTRADA)
+  # ========================================================================
+  api-gateway:
+    image: nginx:alpine
+    container_name: arca_api_gateway
+    volumes:
+      - ./api-gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "${GATEWAY_PORT:-8000}:8000"
+    depends_on:
+      - ms_personal
+      - ms_contratos
+      - modulo_boletas
+      - modulo_vacaciones
+    networks:
+      - arca_global_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ============================================================================
+# REDES
+# ============================================================================
+networks:
+  arca_global_network:
+    driver: bridge
+
+# ============================================================================
+# VOLÚMENES
+# ============================================================================
+volumes:
+  arca_postgres_data:
+    driver: local

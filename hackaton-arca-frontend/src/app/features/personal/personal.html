@@ -16,7 +16,7 @@
     <p-tabpanel value="0">
       <p-card header="Departamentos">
         <div class="toolbar">
-          <button pButton label="Nuevo" icon="pi pi-plus" (click)="openDeptDialog()" />
+          <button pButton label="Nuevo" icon="pi pi-plus" (click)="openDeptDialog()"></button>
         </div>
         <p-table [value]="departments()" [loading]="loading()">
           <ng-template pTemplate="header">
@@ -47,7 +47,7 @@
     <p-tabpanel value="1">
       <p-card header="Posiciones">
         <div class="toolbar">
-          <button pButton label="Nueva" icon="pi pi-plus" (click)="openPosDialog()" />
+          <button pButton label="Nueva" icon="pi pi-plus" (click)="openPosDialog()"></button>
         </div>
         <p-table [value]="positions()" [loading]="loading()">
           <ng-template pTemplate="header">
@@ -79,7 +79,7 @@
     <p-tabpanel value="2">
       <p-card header="Empleados">
         <div class="toolbar">
-          <button pButton label="Nuevo" icon="pi pi-plus" (click)="openEmpDialog()" />
+          <button pButton label="Nuevo" icon="pi pi-plus" (click)="openEmpDialog()"></button>
         </div>
         <p-table [value]="employees()" [loading]="loading()">
           <ng-template pTemplate="header">

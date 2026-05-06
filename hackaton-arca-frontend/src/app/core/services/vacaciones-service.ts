@@ -1,7 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { VacationBalance, VacationRequest, type NewVacationRequest } from '@core/models/vacation.model';
+import {
+  VacationBalance,
+  VacationRequest,
+  type NewVacationRequest,
+} from '@core/models/vacation.model';
 import { environment } from '@env/environments';
 
 @Injectable({ providedIn: 'root' })
@@ -18,6 +22,8 @@ export class VacacionesService {
   }
 
   approve(requestId: number, status: 'APPROVED' | 'REJECTED'): Observable<VacationRequest> {
-    return this.http.patch<VacationRequest>(`${this.apiUrl}/vacations/approve/${requestId}`, { status });
+    return this.http.patch<VacationRequest>(`${this.apiUrl}/vacations/approve/${requestId}`, {
+      status,
+    });
   }
 }

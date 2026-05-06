@@ -5,7 +5,7 @@ import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MessageModule } from 'primeng/message';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
@@ -26,7 +26,7 @@ import {
     TableModule,
     ButtonModule,
     InputTextModule,
-    DropdownModule,
+    SelectModule,
     MessageModule,
     DialogModule,
     TagModule,
@@ -41,6 +41,7 @@ export class Contratos implements OnInit {
   contracts = signal<ContractListResponse[]>([]);
   tipos = signal<ContractTypeResponse[]>([]);
   selectedContract = signal<ContractResponse | null>(null);
+  showDetail = signal(false);
   loading = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
@@ -79,9 +80,7 @@ export class Contratos implements OnInit {
     try {
       const data = await this.svc.getTipos();
       this.tipos.set(data);
-    } catch {
-      // Endpoint auxiliar, puede fallar sin romper la UI
-    }
+    } catch {}
   }
 
   async viewContract(id: number) {
@@ -90,6 +89,7 @@ export class Contratos implements OnInit {
     try {
       const c = await this.svc.getById(id);
       this.selectedContract.set(c);
+      this.showDetail.set(true);
     } catch (e: any) {
       this.error.set(e.message || 'Error al obtener contrato');
     } finally {
@@ -105,10 +105,9 @@ export class Contratos implements OnInit {
       this.success.set(`Estado actualizado a ${status}`);
       const c = this.selectedContract();
       if (c && c.id === id) {
-        c.status = status;
-        this.selectedContract.set({ ...c });
+        this.selectedContract.set({ ...c, status });
       }
-      this.contracts.set(this.contracts().map(x => x.id === id ? { ...x, status } : x));
+      this.contracts.set(this.contracts().map((x) => (x.id === id ? { ...x, status } : x)));
     } catch (e: any) {
       this.error.set(e.message || 'Error al actualizar estado');
     } finally {
@@ -117,7 +116,15 @@ export class Contratos implements OnInit {
   }
 
   openGenerateDialog() {
-    this.form = { employee_id: 0, contract_type_id: 0, salary: 0, start_date: '', end_date: '', job_title: '', department: '' };
+    this.form = {
+      employee_id: 0,
+      contract_type_id: 0,
+      salary: 0,
+      start_date: '',
+      end_date: '',
+      job_title: '',
+      department: '',
+    };
     this.selectedTipo.set(null);
     this.error.set(null);
     this.showGenDialog.set(true);
@@ -147,9 +154,14 @@ export class Contratos implements OnInit {
     this.form.contract_type_id = tipo.id;
   }
 
-  statusSeverity(status: string): 'success' | 'warning' | 'danger' {
+  statusSeverity(status: string): 'success' | 'warn' | 'danger' {
     if (status === 'Activo') return 'success';
     if (status === 'Vencido') return 'danger';
-    return 'warning';
+    return 'warn';
+  }
+
+  closeDetail() {
+    this.showDetail.set(false);
+    this.selectedContract.set(null);
   }
 }

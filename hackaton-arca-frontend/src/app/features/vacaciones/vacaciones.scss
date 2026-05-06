@@ -1,5 +1,5 @@
 .balance-grid {
-  DATABASE_URLmpostgresql://postgres:62625054@localhost:5432/KATA  display: grid;
+  display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }

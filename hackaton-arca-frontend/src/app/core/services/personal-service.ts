@@ -1,7 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../environments/environments';
 import {
   Department,
   NewDepartment,
@@ -11,6 +10,7 @@ import {
   NewEmployee,
   EmployeeCount,
 } from '../models/employee.model';
+import { environment } from '@env/environments';
 
 @Injectable({ providedIn: 'root' })
 export class PersonalService {
@@ -67,7 +67,12 @@ export class PersonalService {
   }
 
   // ===== EMPLOYEES =====
-  async listEmployees(opts?: { skip?: number; limit?: number; status?: string; department_id?: number }): Promise<Employee[]> {
+  async listEmployees(opts?: {
+    skip?: number;
+    limit?: number;
+    status?: string;
+    department_id?: number;
+  }): Promise<Employee[]> {
     let params = new HttpParams();
     if (opts?.skip) params = params.set('skip', opts.skip);
     if (opts?.limit) params = params.set('limit', opts.limit);
@@ -108,6 +113,8 @@ export class PersonalService {
   }
 
   async listByDepartment(deptId: number): Promise<Employee[]> {
-    return firstValueFrom(this.http.get<Employee[]>(`${this.base}/employees/department/${deptId}/list`));
+    return firstValueFrom(
+      this.http.get<Employee[]>(`${this.base}/employees/department/${deptId}/list`),
+    );
   }
 }

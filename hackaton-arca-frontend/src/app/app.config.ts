@@ -104,5 +104,6 @@ export const appConfig: ApplicationConfig = {
         emptyFilterMessage: 'No se encontraron resultados',
         emptyMessage: 'No hay opciones disponibles',
       },
+    }),
   ],
 };
