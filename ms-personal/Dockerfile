@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -7,8 +7,8 @@ WORKDIR /app
 
 # Instala dependencias del sistema necesarias para psycopg/build wheels
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev build-essential \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends gcc libpq-dev build-essential \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copiar e instalar dependencias Python
 COPY requirements.txt .
