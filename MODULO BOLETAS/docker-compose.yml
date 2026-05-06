@@ -1,0 +1,49 @@
+services:
+  boletas-db:
+    image: postgres:16-alpine
+    container_name: boletas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: boletas_db
+      POSTGRES_USER: boletas_user
+      POSTGRES_PASSWORD: boletas_pass
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boletas_user -d boletas_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"
+    volumes:
+      - boletas_db_data:/var/lib/postgresql/data
+    networks:
+      - rrhh-network
+
+  modulo-boletas:
+    build: .
+    container_name: modulo-boletas
+    restart: unless-stopped
+    depends_on:
+      boletas-db:
+        condition: service_healthy
+    environment:
+      PORT: 8004
+      DB_HOST: boletas-db
+      DB_PORT: 5432
+      DB_NAME: boletas_db
+      DB_USER: boletas_user
+      DB_PASSWORD: boletas_pass
+      DB_SSL: "false"
+      DB_SCHEMA_PATH: app/schema.sql
+    ports:
+      - "8004:8004"
+    networks:
+      - rrhh-network
+
+volumes:
+  boletas_db_data:
+
+networks:
+  rrhh-network:
+    driver: bridge
+
