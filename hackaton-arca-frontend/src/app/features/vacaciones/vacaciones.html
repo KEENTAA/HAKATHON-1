@@ -1,0 +1,87 @@
+<h2>Vacaciones</h2>
+
+<!-- Balance -->
+<p-card header="Balance de Días">
+  @if (balance(); as b) {
+    <div class="balance-grid">
+      <div class="balance-item">
+        <span class="label">Días Ganados</span>
+        <span class="value">{{ b.days_earned }}</span>
+      </div>
+      <div class="balance-item">
+        <span class="label">Días Usados</span>
+        <span class="value">{{ b.days_used }}</span>
+      </div>
+      <div class="balance-item highlight">
+        <span class="label">Disponibles</span>
+        <span class="value">{{ b.days_available }}</span>
+      </div>
+    </div>
+  } @else {
+    <p>No hay balance disponible</p>
+  }
+</p-card>
+
+<!-- Formulario de solicitud -->
+<p-card header="Solicitar Vacaciones">
+  @if (error(); as e) {
+    <p-message severity="error" [text]="e" />
+  }
+  @if (success(); as s) {
+    <p-message severity="success" [text]="s" />
+  }
+
+  <div class="form-row">
+    <div class="form-group">
+      <label>Fecha Inicio</label>
+      <input pInputText type="date" [(ngModel)]="startDate" />
+    </div>
+    <div class="form-group">
+      <label>Fecha Fin</label>
+      <input pInputText type="date" [(ngModel)]="endDate" />
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <input pInputText type="text" [(ngModel)]="description" placeholder="Motivo" />
+    </div>
+    <div class="form-group">
+      <button pButton label="Solicitar" (click)="submitRequest()" [loading]="loading()"></button>
+    </div>
+  </div>
+</p-card>
+
+<!-- Lista de solicitudes -->
+<p-card header="Solicitudes">
+  <p-table [value]="requests()" [loading]="loading()">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>ID</th>
+        <th>Empleado</th>
+        <th>Desde</th>
+        <th>Hasta</th>
+        <th>Días</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-req>
+      <tr>
+        <td>{{ req.id }}</td>
+        <td>{{ req.employee_id }}</td>
+        <td>{{ req.start_date }}</td>
+        <td>{{ req.end_date }}</td>
+        <td>{{ req.total_days }}</td>
+        <td>
+          <span [class]="req.status === 'APPROVED' ? 'approved' : req.status === 'REJECTED' ? 'rejected' : 'pending'">
+            {{ req.status }}
+          </span>
+        </td>
+        <td>
+          @if (req.status === 'PENDING') {
+            <p-button label="Aprobar" size="small" (click)="approveRequest(req.id)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

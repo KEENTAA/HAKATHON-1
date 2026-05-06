@@ -1,0 +1,53 @@
+.balance-grid {
+  DATABASE_URLmpostgresql://postgres:62625054@localhost:5432/KATA  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.balance-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: var(--surface-ground);
+  border-radius: var(--border-radius);
+
+  &.highlight {
+    background: var(--primary-50);
+    border: 1px solid var(--primary-200);
+  }
+
+  .label {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+  }
+
+  .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+.approved { color: var(--green-500); font-weight: 600; }
+.pending { color: var(--yellow-500); font-weight: 600; }
+.rejected { color: var(--red-500); font-weight: 600; }

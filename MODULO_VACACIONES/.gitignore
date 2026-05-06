@@ -1,0 +1,13 @@
+# Entorno virtual
+venv/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Base de datos local (si usas sqlite para pruebas rápidas)
+*.db
+
+# Alembic
+migrations/versions/*.pyc
