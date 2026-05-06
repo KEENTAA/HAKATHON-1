@@ -7,7 +7,7 @@
   <p-message severity="success" [text]="s" />
 }
 
-<!-- Buscar por empleado -->
+<!-- Buscar por empleado + Generar -->
 <p-card header="Buscar Contratos por Empleado">
   <div class="form-row">
     <div class="form-group">
@@ -21,16 +21,14 @@
   </div>
 </p-card>
 
-<!-- Tabla de contratos -->
+<!-- Tabla de contratos (lista light) -->
 @if (contracts().length) {
   <p-card header="Contratos del Empleado">
     <p-table [value]="contracts()" [loading]="loading()">
       <ng-template pTemplate="header">
         <tr>
           <th>ID</th>
-          <th>Tipo</th>
           <th>Cargo</th>
-          <th>Departamento</th>
           <th>Salario</th>
           <th>Inicio</th>
           <th>Fin</th>
@@ -41,17 +39,15 @@
       <ng-template pTemplate="body" let-c>
         <tr>
           <td>{{ c.id }}</td>
-          <td>{{ c.contract_type_id }}</td>
           <td>{{ c.job_title }}</td>
-          <td>{{ c.department }}</td>
           <td>{{ c.salary | currency }}</td>
           <td>{{ c.start_date }}</td>
           <td>{{ c.end_date }}</td>
           <td>
-            <span [class]="c.status === 'Activo' ? 'approved' : 'pending'">{{ c.status }}</span>
+            <p-tag [value]="c.status" [severity]="statusSeverity(c.status)" />
           </td>
           <td>
-            <p-button label="Ver" size="small" (click)="viewContract(c.id)" />
+            <button pButton label="Ver" icon="pi pi-eye" size="small" (click)="viewContract(c.id)"></button>
           </td>
         </tr>
       </ng-template>
@@ -69,7 +65,7 @@
       <label>Tipo de Contrato</label>
       <p-dropdown
         [options]="tipos()"
-        [(ngModel)]="selectedContractType"
+        [(ngModel)]="selectedTipo"
         (onChange)="onTipoChange($event.value)"
         optionLabel="name"
         placeholder="Seleccionar tipo"
@@ -103,33 +99,37 @@
     </div>
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" (click)="showGenDialog.set(false)" [text]="true" />
-    <p-button label="Generar" (click)="generateContract()" [loading]="loading()" />
+    <button pButton label="Cancelar" (click)="showGenDialog.set(false)" [text]="true"></button>
+    <button pButton label="Generar" (click)="generateContract()" [loading]="loading()"></button>
   </ng-template>
 </p-dialog>
 
-<!-- Dialog ver contrato -->
+<!-- Dialog ver contrato detallado (con document_text) -->
 @if (selectedContract(); as c) {
   <p-dialog [(visible)]="selectedContract" [modal]="true" header="Contrato #{{ c.id }}" [style]="{ width: '700px' }">
     <div class="contract-detail">
       <div class="info-grid">
-        <div><strong>Estado:</strong> {{ c.status }}</div>
-        <div><strong>Tipo:</strong> {{ c.contract_type_id }}</div>
+        <div><strong>Estado:</strong> <p-tag [value]="c.status" [severity]="statusSeverity(c.status)" /></div>
+        <div><strong>Tipo ID:</strong> {{ c.contract_type_id }}</div>
         <div><strong>Cargo:</strong> {{ c.job_title }}</div>
         <div><strong>Departamento:</strong> {{ c.department }}</div>
-        <div><strong>Salario:</strong> {{ c.salary }}</div>
+        <div><strong>Salario:</strong> {{ c.salary | currency }}</div>
         <div><strong>Inicio:</strong> {{ c.start_date }}</div>
         <div><strong>Fin:</strong> {{ c.end_date }}</div>
+        <div><strong>Creado:</strong> {{ c.created_at }}</div>
       </div>
 
       @if (c.status === 'Activo') {
         <div class="status-actions">
-          <p-button label="Marcar Vencido" severity="warn" size="small" (click)="updateStatus(c.id, 'Vencido')" [loading]="loading()" />
+          <button pButton label="Marcar Vencido" icon="pi pi-ban" severity="warn" size="small" (click)="updateStatus(c.id, 'Vencido')" [loading]="loading()"></button>
         </div>
       }
 
-      <h3>Documento</h3>
-      <div class="document-preview">{{ c.document }}</div>
+      <h3>Documento Legal</h3>
+      <div class="document-preview">{{ c.document_text }}</div>
     </div>
+    <ng-template pTemplate="footer">
+      <button pButton label="Cerrar" (click)="selectedContract.set(null)"></button>
+    </ng-template>
   </p-dialog>
 }

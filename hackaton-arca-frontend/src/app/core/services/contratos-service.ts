@@ -3,9 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environments';
 import {
+  ContractCreate,
+  ContractListResponse,
   ContractResponse,
-  ContractType,
-  GenerateContractRequest,
+  ContractTypeResponse,
+  ContractUpdateStatus,
 } from '../models/contract.model';
 
 @Injectable({ providedIn: 'root' })
@@ -13,15 +15,15 @@ export class ContratosService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiUrl;
 
-  async generate(dto: GenerateContractRequest): Promise<ContractResponse> {
+  async generate(dto: ContractCreate): Promise<ContractResponse> {
     return firstValueFrom(
       this.http.post<ContractResponse>(`${this.baseUrl}/contratos/generate`, dto)
     );
   }
 
-  async getByEmployee(employeeId: number): Promise<ContractResponse[]> {
+  async getByEmployee(employeeId: number): Promise<ContractListResponse[]> {
     return firstValueFrom(
-      this.http.get<ContractResponse[]>(`${this.baseUrl}/contratos/empleado/${employeeId}`)
+      this.http.get<ContractListResponse[]>(`${this.baseUrl}/contratos/empleado/${employeeId}`)
     );
   }
 
@@ -31,15 +33,15 @@ export class ContratosService {
     );
   }
 
-  async updateStatus(id: number, status: string): Promise<ContractResponse> {
+  async updateStatus(id: number, dto: ContractUpdateStatus): Promise<ContractResponse> {
     return firstValueFrom(
-      this.http.put<ContractResponse>(`${this.baseUrl}/contratos/${id}/status`, { status })
+      this.http.put<ContractResponse>(`${this.baseUrl}/contratos/${id}/status`, dto)
     );
   }
 
-  async getTipos(): Promise<ContractType[]> {
+  async getTipos(): Promise<ContractTypeResponse[]> {
     return firstValueFrom(
-      this.http.get<ContractType[]>(`${this.baseUrl}/contratos/tipos`)
+      this.http.get<ContractTypeResponse[]>(`${this.baseUrl}/contratos/tipos`)
     );
   }
 }
