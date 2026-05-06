@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
-import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit, WritableSignal, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom, forkJoin } from 'rxjs';
@@ -876,7 +875,7 @@ export class App implements OnInit {
   }
 
   private syncCatalogDefaults(): void {
-    if (!this.departmentCreate.department_id) {
+    if (!this.employeeCreate.department_id) {
       this.employeeCreate.department_id = this.departments()[0]?.id ?? this.employeeCreate.department_id;
     }
     if (!this.employeeCreate.position_id) {
