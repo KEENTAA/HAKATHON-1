@@ -10,8 +10,7 @@ from app.database import init_db
 from app.routers import vacations
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -50,7 +49,7 @@ app.include_router(vacations.router)
     "/",
     tags=["Información"],
     summary="Estado general",
-    description="Retorna información básica del servicio"
+    description="Retorna información básica del servicio",
 )
 async def root():
     return {
@@ -62,8 +61,8 @@ async def root():
         "endpoints": {
             "balance": "/vacations/employees/{employee_id}/balance",
             "eligibility": "/vacations/employees/{employee_id}/eligibility",
-            "requests": "/vacations/requests"
-        }
+            "requests": "/vacations/requests",
+        },
     }
 
 
@@ -71,7 +70,7 @@ async def root():
     "/health",
     tags=["Información"],
     summary="Health Check",
-    description="Verifica que el microservicio está funcionando correctamente"
+    description="Verifica que el microservicio está funcionando correctamente",
 )
 async def health_check():
     return {
@@ -79,7 +78,7 @@ async def health_check():
         "service": "Vacations Management Service",
         "version": "1.0.0",
         "database": "connected",
-        "modules": ["VacationBalances", "VacationRequests"]
+        "modules": ["VacationBalances", "VacationRequests"],
     }
 
 
@@ -89,15 +88,9 @@ if __name__ == "__main__":
     logger.info("=" * 60)
     logger.info("MICROSERVICIO DE VACACIONES - ARCA LTDA")
     logger.info("=" * 60)
-    logger.info("URL: http://localhost:8001")
-    logger.info("Documentación Swagger: http://localhost:8001/docs")
-    logger.info("Documentación ReDoc: http://localhost:8001/redoc")
+    logger.info("URL: http://localhost:8002")
+    logger.info("Documentación Swagger: http://localhost:8002/docs")
+    logger.info("Documentación ReDoc: http://localhost:8002/redoc")
     logger.info("=" * 60)
 
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True, log_level="info")

@@ -38,10 +38,10 @@ export class ArcaApiService {
 
   healthChecks(): Record<string, Observable<MicroserviceHealth>> {
     return {
-      personal: this.http.get<ServiceHealth>(`${this.personalBase}/health`),
-      vacations: this.http.get<ServiceHealth>(`${this.vacationsBase}/health`),
-      contracts: this.http.get<ServiceHealth>(`${this.contractsBase}/health`),
-      payroll: this.http.get<ServiceHealth>(`${this.payrollBase}/health`),
+      personal: this.http.get<MicroserviceHealth>(`${this.personalBase}/health`),
+      vacations: this.http.get<MicroserviceHealth>(`${this.vacationsBase}/health`),
+      contracts: this.http.get<MicroserviceHealth>(`${this.contractsBase}/health`),
+      payroll: this.http.get<MicroserviceHealth>(`${this.payrollBase}/health`),
     };
   }
 

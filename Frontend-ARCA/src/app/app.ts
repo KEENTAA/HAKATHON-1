@@ -1,4 +1,5 @@
-import { CommonModule, HttpErrorResponse } from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit, WritableSignal, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -237,10 +238,10 @@ export class App implements OnInit {
       ]);
 
       this.serviceCards.set([
-        this.toServiceCard('Personal', 'http://localhost:8000', 'http://localhost:8000/docs', health.personal),
-        this.toServiceCard('Vacaciones', 'http://localhost:8002', 'http://localhost:8002/docs', health.vacations),
-        this.toServiceCard('Contratos', 'http://localhost:8003', 'http://localhost:8003/docs', health.contracts),
-        this.toServiceCard('Boletas', 'http://localhost:8004', 'http://localhost:8004/docs', health.payroll),
+        this.toServiceCard('Personal', 'http://localhost:8000', 'http://localhost:8000/docs', health['personal']),
+        this.toServiceCard('Vacaciones', 'http://localhost:8002', 'http://localhost:8002/docs', health['vacaciones']),
+        this.toServiceCard('Contratos', 'http://localhost:8003', 'http://localhost:8003/docs', health['contratos']),
+        this.toServiceCard('Boletas', 'http://localhost:8004', 'http://localhost:8004/docs', health['payroll']),
       ]);
 
       this.departments.set(catalogs.departments);

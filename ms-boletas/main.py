@@ -10,8 +10,7 @@ from app.database import init_db
 from app.routers import boletas
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -49,7 +48,7 @@ app.include_router(boletas.router)
     "/",
     tags=["Información"],
     summary="Estado general",
-    description="Retorna información básica del servicio"
+    description="Retorna información básica del servicio",
 )
 async def root():
     return {
@@ -62,7 +61,7 @@ async def root():
             "generate": "/boletas/generate",
             "by_employee": "/boletas/{empleado_id}",
             "concepts": "/boletas/concepts",
-        }
+        },
     }
 
 
@@ -70,7 +69,7 @@ async def root():
     "/health",
     tags=["Información"],
     summary="Health Check",
-    description="Verifica que el microservicio está funcionando correctamente"
+    description="Verifica que el microservicio está funcionando correctamente",
 )
 async def health_check():
     return {
@@ -78,7 +77,7 @@ async def health_check():
         "service": "Payroll Management Service",
         "version": "1.0.0",
         "database": "connected",
-        "modules": ["PaymentConcepts", "PaySlips", "PaySlipDetails"]
+        "modules": ["PaymentConcepts", "PaySlips", "PaySlipDetails"],
     }
 
 
@@ -93,10 +92,4 @@ if __name__ == "__main__":
     logger.info("Documentación ReDoc: http://localhost:8004/redoc")
     logger.info("=" * 60)
 
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=8004, reload=True, log_level="info")
