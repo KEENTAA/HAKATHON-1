@@ -10,10 +10,34 @@ Microservicio MVP para generar y almacenar boletas de pago con base de datos rel
 - `pay_slip_details` (detalle)
 - Calculo automatico de `total_net = ingresos - egresos`
 
-## Ejecutar con Docker
+## Ejecutar con Docker (sin docker-compose)
 
-```bash
-docker compose up --build
+```powershell
+docker network create rrhh-network
+docker volume create boletas_db_data
+
+docker build -f Dockerfile.db -t boletas-db:latest .
+docker run -d --name boletas-db `
+  --network rrhh-network `
+  -e POSTGRES_DB=boletas_db `
+  -e POSTGRES_USER=boletas_user `
+  -e POSTGRES_PASSWORD=boletas_pass `
+  -p 5433:5432 `
+  -v boletas_db_data:/var/lib/postgresql/data `
+  boletas-db:latest
+
+docker build -f Dockerfile -t modulo-boletas:latest .
+docker run -d --name modulo-boletas `
+  --network rrhh-network `
+  -e DB_HOST=boletas-db `
+  -e DB_PORT=5432 `
+  -e DB_NAME=boletas_db `
+  -e DB_USER=boletas_user `
+  -e DB_PASSWORD=boletas_pass `
+  -e DB_SSL=false `
+  -e DB_SCHEMA_PATH=app/schema.sql `
+  -p 8004:8004 `
+  modulo-boletas:latest
 ```
 
 Servicios:
