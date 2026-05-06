@@ -1,0 +1,592 @@
+<main class="shell">
+  <section class="hero" id="overview">
+    <div class="hero-copy">
+      <p class="eyebrow">Frontend & API Gateway · ARCA LTDA</p>
+      <h1>Control room para Personal, Vacaciones, Contratos y Boletas</h1>
+      <p class="intro">
+        Un solo panel para operar los cuatro microservicios FastAPI, probar sus endpoints y demostrar el flujo completo del MVP sin saltos de contexto.
+      </p>
+      <div class="hero-actions">
+        <a href="#personal">Ir a Personal</a>
+        <a href="#vacations">Ir a Vacaciones</a>
+        <a href="#contracts">Ir a Contratos</a>
+        <a href="#payroll">Ir a Boletas</a>
+        <button type="button" class="primary" (click)="runDemoWorkflow()" [disabled]="loading()">
+          Ejecutar demo integral
+        </button>
+      </div>
+      <p class="banner" [class.error]="errorMessage()">{{ banner() }}</p>
+    </div>
+
+    <aside class="hero-panel">
+      @for (service of serviceCards(); track service.name) {
+        <article class="service-card">
+          <div class="service-head">
+            <div>
+              <p>{{ service.name }}</p>
+              <strong>{{ serviceLabel(service) }}</strong>
+            </div>
+            <a [href]="service.docsUrl" target="_blank" rel="noopener">Docs</a>
+          </div>
+          <p>{{ summaryHint(service) }}</p>
+        </article>
+      }
+    </aside>
+  </section>
+
+  <section class="stats-grid" aria-label="Resumen de estado">
+    @for (tile of summaryTiles(); track tile.label) {
+      <article class="stat-card">
+        <span>{{ tile.label }}</span>
+        <strong>{{ tile.value }}</strong>
+      </article>
+    }
+  </section>
+
+  <nav class="section-nav" aria-label="Navegación del tablero">
+    @for (section of sections; track section.id) {
+      <a [href]="'#' + section.id">
+        <span>{{ section.label }}</span>
+        <small>{{ section.hint }}</small>
+      </a>
+    }
+  </nav>
+
+  <section class="trace-panel" aria-live="polite">
+    <header>
+      <p>Estado global</p>
+      <span>{{ loading() ? 'Procesando...' : 'Listo' }}</span>
+    </header>
+    <pre>{{ workflowTrace() }}</pre>
+  </section>
+
+  @if (errorMessage()) {
+    <section class="alert-panel">
+      <strong>Revisa el backend</strong>
+      <p>{{ errorMessage() }}</p>
+    </section>
+  }
+
+  <section class="module" id="personal">
+    <div class="module-head">
+      <div>
+        <p>Integrante 1</p>
+        <h2>Microservicio de Personal</h2>
+      </div>
+      <span>CRUD maestro</span>
+    </div>
+
+    <div class="module-grid three-up">
+      <article class="panel">
+        <h3>Áreas</h3>
+        <form (ngSubmit)="createDepartment()">
+          <label>Nombre
+            <input name="departmentName" [(ngModel)]="departmentCreate.name" placeholder="Tecnología" required />
+          </label>
+          <label>Descripción
+            <input name="departmentDescription" [(ngModel)]="departmentCreate.description" placeholder="Área operativa" />
+          </label>
+          <button type="submit">Crear área</button>
+        </form>
+
+        <form class="inline-form" (ngSubmit)="updateDepartment()">
+          <label>ID
+            <input name="departmentUpdateId" type="number" [(ngModel)]="departmentUpdate.id" min="1" />
+          </label>
+          <label>Nombre
+            <input name="departmentUpdateName" [(ngModel)]="departmentUpdate.name" placeholder="Tecnología" />
+          </label>
+          <label>Descripción
+            <input name="departmentUpdateDescription" [(ngModel)]="departmentUpdate.description" placeholder="Área actualizada" />
+          </label>
+          <button type="submit">Actualizar</button>
+        </form>
+
+        <form class="inline-form" (ngSubmit)="deleteDepartment()">
+          <label>ID a eliminar
+            <input name="departmentDeleteId" type="number" [(ngModel)]="departmentDeleteId" min="1" />
+          </label>
+          <button type="submit" class="danger">Eliminar</button>
+        </form>
+
+        <div class="list-wrap">
+          <span class="list-title">Catálogo cargado</span>
+          <div class="chip-list">
+            @for (department of departments(); track department.id) {
+              <span class="chip">#{{ department.id }} {{ department.name }}</span>
+            }
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Cargos</h3>
+        <form (ngSubmit)="createPosition()">
+          <label>Nombre
+            <input name="positionName" [(ngModel)]="positionCreate.name" placeholder="Analista" required />
+          </label>
+          <label>Salario base
+            <input name="positionBaseSalary" type="number" [(ngModel)]="positionCreate.base_salary" min="1" />
+          </label>
+          <button type="submit">Crear cargo</button>
+        </form>
+
+        <form class="inline-form" (ngSubmit)="updatePosition()">
+          <label>ID
+            <input name="positionUpdateId" type="number" [(ngModel)]="positionUpdate.id" min="1" />
+          </label>
+          <label>Nombre
+            <input name="positionUpdateName" [(ngModel)]="positionUpdate.name" placeholder="Analista Senior" />
+          </label>
+          <label>Salario base
+            <input name="positionUpdateSalary" type="number" [(ngModel)]="positionUpdate.base_salary" min="1" />
+          </label>
+          <button type="submit">Actualizar</button>
+        </form>
+
+        <form class="inline-form" (ngSubmit)="deletePosition()">
+          <label>ID a eliminar
+            <input name="positionDeleteId" type="number" [(ngModel)]="positionDeleteId" min="1" />
+          </label>
+          <button type="submit" class="danger">Eliminar</button>
+        </form>
+
+        <div class="list-wrap">
+          <span class="list-title">Catálogo cargado</span>
+          <div class="chip-list">
+            @for (position of positions(); track position.id) {
+              <span class="chip">#{{ position.id }} {{ position.name }}</span>
+            }
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Funcionarios</h3>
+        <form (ngSubmit)="createEmployee()">
+          <label>CI
+            <input name="employeeCi" [(ngModel)]="employeeCreate.ci" placeholder="1234567" required />
+          </label>
+          <div class="field-grid">
+            <label>Nombre
+              <input name="employeeFirstName" [(ngModel)]="employeeCreate.first_name" placeholder="Juan" required />
+            </label>
+            <label>Apellido
+              <input name="employeeLastName" [(ngModel)]="employeeCreate.last_name" placeholder="Perez" required />
+            </label>
+          </div>
+          <label>Email
+            <input name="employeeEmail" [(ngModel)]="employeeCreate.email" placeholder="juan@arca.local" required />
+          </label>
+          <label>Teléfono
+            <input name="employeePhone" [(ngModel)]="employeeCreate.phone" placeholder="70000000" />
+          </label>
+          <div class="field-grid">
+            <label>Ingreso
+              <input name="employeeHireDate" type="date" [(ngModel)]="employeeCreate.hire_date" required />
+            </label>
+            <label>Salario actual
+              <input name="employeeSalary" type="number" [(ngModel)]="employeeCreate.current_salary" min="1" />
+            </label>
+          </div>
+          <div class="field-grid">
+            <label>Área ID
+              <input name="employeeDepartmentId" type="number" [(ngModel)]="employeeCreate.department_id" min="1" />
+            </label>
+            <label>Cargo ID
+              <input name="employeePositionId" type="number" [(ngModel)]="employeeCreate.position_id" min="1" />
+            </label>
+          </div>
+          <button type="submit">Crear funcionario</button>
+        </form>
+
+        <form class="inline-form" (ngSubmit)="updateEmployee()">
+          <label>ID
+            <input name="employeeUpdateId" type="number" [(ngModel)]="employeeUpdate.id" min="1" />
+          </label>
+          <label>Salario
+            <input name="employeeUpdateSalary" type="number" [(ngModel)]="employeeUpdate.current_salary" min="1" />
+          </label>
+          <label>Área
+            <input name="employeeUpdateDepartment" type="number" [(ngModel)]="employeeUpdate.department_id" min="1" />
+          </label>
+          <label>Cargo
+            <input name="employeeUpdatePosition" type="number" [(ngModel)]="employeeUpdate.position_id" min="1" />
+          </label>
+          <label>Estado
+            <select name="employeeUpdateStatus" [(ngModel)]="employeeUpdate.status">
+              <option value="ACTIVO">ACTIVO</option>
+              <option value="BAJA">BAJA</option>
+              <option value="SUSPENDIDO">SUSPENDIDO</option>
+            </select>
+          </label>
+          <button type="submit">Actualizar</button>
+        </form>
+
+        <div class="inline-actions">
+          <form (ngSubmit)="lookupEmployeeById()">
+            <label>Buscar por ID
+              <input name="lookupEmployeeId" type="number" [(ngModel)]="employeeLookupId" min="1" />
+            </label>
+            <button type="submit">Consultar</button>
+          </form>
+          <form (ngSubmit)="lookupEmployeeByCi()">
+            <label>Buscar por CI
+              <input name="lookupEmployeeCi" [(ngModel)]="employeeLookupCi" placeholder="1234567" />
+            </label>
+            <button type="submit">Consultar</button>
+          </form>
+          <form (ngSubmit)="deactivateEmployee()">
+            <label>Dar de baja ID
+              <input name="deactivateEmployeeId" type="number" [(ngModel)]="employeeDeleteId" min="1" />
+            </label>
+            <button type="submit" class="warn">Baja</button>
+          </form>
+          <form (ngSubmit)="deleteEmployee()">
+            <label>Eliminar ID
+              <input name="deleteEmployeeId" type="number" [(ngModel)]="employeeDeleteId" min="1" />
+            </label>
+            <button type="submit" class="danger">Eliminar</button>
+          </form>
+        </div>
+
+        <form class="inline-form" (ngSubmit)="listEmployeesByDepartment()">
+          <label>Listar por área
+            <input name="employeesByDepartmentId" type="number" [(ngModel)]="employeesByDepartmentId" min="1" />
+          </label>
+          <button type="submit">Listar</button>
+        </form>
+
+        <form class="inline-form" (ngSubmit)="countEmployees()">
+          <label>Filtro estado
+            <input name="countStatus" [(ngModel)]="employeeCountFilters.status" placeholder="ACTIVO" />
+          </label>
+          <label>Filtro área
+            <input name="countDepartment" type="number" [(ngModel)]="employeeCountFilters.department_id" min="0" />
+          </label>
+          <button type="submit">Contar</button>
+        </form>
+      </article>
+    </div>
+
+    <article class="trace-panel compact">
+      <header>
+        <p>Respuesta Personal</p>
+      </header>
+      <pre>{{ personalTrace() }}</pre>
+    </article>
+
+    <div class="table-card">
+      <header>
+        <p>Funcionarios cargados</p>
+        <span>Máximo 25 registros</span>
+      </header>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>CI</th>
+            <th>Nombre</th>
+            <th>Área</th>
+            <th>Cargo</th>
+            <th>Estado</th>
+            <th>Salario</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (employee of employees(); track employee.id) {
+            <tr>
+              <td>{{ employee.id }}</td>
+              <td>{{ employee.ci }}</td>
+              <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+              <td>{{ employee.department?.name || employee.department_id }}</td>
+              <td>{{ employee.position?.name || employee.position_id }}</td>
+              <td>{{ employee.status }}</td>
+              <td>{{ employee.current_salary }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="module" id="vacations">
+    <div class="module-head">
+      <div>
+        <p>Integrante 2</p>
+        <h2>Microservicio de Vacaciones</h2>
+      </div>
+      <span>Balance y solicitudes</span>
+    </div>
+
+    <div class="module-grid two-up">
+      <article class="panel">
+        <h3>Balance y elegibilidad</h3>
+        <form class="inline-form" (ngSubmit)="getVacationBalance()">
+          <label>Funcionario
+            <input name="vacationLookupEmployeeId" type="number" [(ngModel)]="vacationLookupEmployeeId" min="1" />
+          </label>
+          <button type="submit">Ver balance</button>
+        </form>
+        <form class="inline-form" (ngSubmit)="getVacationEligibility()">
+          <label>Funcionario
+            <input name="vacationEligibilityEmployeeId" type="number" [(ngModel)]="vacationLookupEmployeeId" min="1" />
+          </label>
+          <button type="submit">Ver elegibilidad</button>
+        </form>
+        <form class="inline-form" (ngSubmit)="lookupVacationRequest()">
+          <label>Solicitud ID
+            <input name="vacationRequestId" type="number" [(ngModel)]="vacationRequestId" min="1" />
+          </label>
+          <button type="submit">Consultar solicitud</button>
+        </form>
+        <div class="list-wrap">
+          <span class="list-title">Solicitud por funcionario</span>
+          <form class="inline-form" (ngSubmit)="listVacationRequests()">
+            <label>Funcionario
+              <input name="vacationListEmployeeId" type="number" [(ngModel)]="vacationListEmployeeId" min="1" />
+            </label>
+            <label>Estado
+              <input name="vacationStatusFilter" [(ngModel)]="vacationStatusFilter" placeholder="Pendiente" />
+            </label>
+            <button type="submit">Listar</button>
+          </form>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h3>Solicitar y revisar</h3>
+        <form (ngSubmit)="createVacationRequest()">
+          <label>Funcionario
+            <input name="vacationRequestEmployeeId" type="number" [(ngModel)]="vacationRequestForm.employee_id" min="1" />
+          </label>
+          <div class="field-grid">
+            <label>Inicio
+              <input name="vacationStartDate" type="date" [(ngModel)]="vacationRequestForm.start_date" />
+            </label>
+            <label>Fin
+              <input name="vacationEndDate" type="date" [(ngModel)]="vacationRequestForm.end_date" />
+            </label>
+          </div>
+          <label>Notas
+            <input name="vacationNotes" [(ngModel)]="vacationRequestForm.notes" placeholder="Solicitud de vacaciones" />
+          </label>
+          <button type="submit">Solicitar vacaciones</button>
+        </form>
+
+        <div class="inline-actions">
+          <form (ngSubmit)="approveVacationRequest()">
+            <label>ID solicitud
+              <input name="approveVacationRequestId" type="number" [(ngModel)]="vacationRequestId" min="1" />
+            </label>
+            <button type="submit">Aprobar</button>
+          </form>
+          <form (ngSubmit)="rejectVacationRequest()">
+            <label>ID solicitud
+              <input name="rejectVacationRequestId" type="number" [(ngModel)]="vacationRequestId" min="1" />
+            </label>
+            <button type="submit" class="warn">Rechazar</button>
+          </form>
+          <form>
+            <label>Notas revisión
+              <input name="vacationReviewNotes" [(ngModel)]="vacationReview.notes" placeholder="Observaciones" />
+            </label>
+          </form>
+        </div>
+      </article>
+    </div>
+
+    <article class="trace-panel compact">
+      <header>
+        <p>Respuesta Vacaciones</p>
+      </header>
+      <pre>{{ vacationsTrace() }}</pre>
+    </article>
+  </section>
+
+  <section class="module" id="contracts">
+    <div class="module-head">
+      <div>
+        <p>Integrante 3</p>
+        <h2>Microservicio de Contratos</h2>
+      </div>
+      <span>Generación parametrizable</span>
+    </div>
+
+    <div class="module-grid two-up">
+      <article class="panel">
+        <h3>Tipos y consulta</h3>
+        <div class="list-wrap">
+          <span class="list-title">Tipos sembrados</span>
+          <div class="chip-list">
+            @for (contractType of contractTypes(); track contractType.id) {
+              <span class="chip">#{{ contractType.id }} {{ contractType.name }}</span>
+            }
+          </div>
+        </div>
+
+        <form (ngSubmit)="generateContract()">
+          <label>Funcionario
+            <input name="contractEmployeeId" type="number" [(ngModel)]="contractGenerateForm.employee_id" min="1" />
+          </label>
+          <label>Tipo de contrato
+            <select name="contractTypeId" [(ngModel)]="contractGenerateForm.contract_type_id">
+              <option [ngValue]="null">Por defecto (Indefinido)</option>
+              @for (type of contractTypes(); track type.id) {
+                <option [ngValue]="type.id">{{ type.name }}</option>
+              }
+            </select>
+          </label>
+          <div class="field-grid">
+            <label>Inicio
+              <input name="contractStartDate" type="date" [(ngModel)]="contractGenerateForm.start_date" />
+            </label>
+            <label>Fin opcional
+              <input name="contractEndDate" type="date" [(ngModel)]="contractGenerateForm.end_date" />
+            </label>
+          </div>
+          <div class="field-grid">
+            <label>Salario
+              <input name="contractSalary" type="number" [(ngModel)]="contractGenerateForm.salary" min="1" />
+            </label>
+            <label>Días de prueba
+              <input name="trialDays" type="number" [(ngModel)]="contractGenerateForm.trial_period_days" min="1" />
+            </label>
+          </div>
+          <button type="submit">Generar contrato</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Consultar contratos</h3>
+        <form class="inline-form" (ngSubmit)="lookupContractById()">
+          <label>Contrato ID
+            <input name="contractLookupId" type="number" [(ngModel)]="contractLookupId" min="1" />
+          </label>
+          <button type="submit">Consultar</button>
+        </form>
+        <form class="inline-form" (ngSubmit)="listContractsByEmployee()">
+          <label>Funcionario
+            <input name="contractListEmployeeId" type="number" [(ngModel)]="contractListEmployeeId" min="1" />
+          </label>
+          <label>Estado
+            <input name="contractStatusFilter" [(ngModel)]="contractStatusFilter" placeholder="Activo" />
+          </label>
+          <button type="submit">Listar</button>
+        </form>
+      </article>
+    </div>
+
+    <article class="trace-panel compact">
+      <header>
+        <p>Respuesta Contratos</p>
+      </header>
+      <pre>{{ contractsTrace() }}</pre>
+    </article>
+  </section>
+
+  <section class="module" id="payroll">
+    <div class="module-head">
+      <div>
+        <p>Integrante 4</p>
+        <h2>Microservicio de Boletas de Pago</h2>
+      </div>
+      <span>Cabecera + detalle M:M</span>
+    </div>
+
+    <div class="module-grid two-up">
+      <article class="panel">
+        <h3>Conceptos de pago</h3>
+        <div class="list-wrap">
+          <span class="list-title">Conceptos sembrados</span>
+          <div class="chip-list">
+            @for (concept of paymentConcepts(); track concept.id) {
+              <span class="chip">#{{ concept.id }} {{ concept.name }} · {{ concept.type }}</span>
+            }
+          </div>
+        </div>
+
+        <form (ngSubmit)="generatePaySlip()">
+          <label>Funcionario
+            <input name="payrollEmployeeId" type="number" [(ngModel)]="paySlipGenerateForm.employee_id" min="1" />
+          </label>
+          <div class="field-grid">
+            <label>Mes
+              <input name="payrollMonth" type="number" [(ngModel)]="paySlipGenerateForm.period_month" min="1" max="12" />
+            </label>
+            <label>Año
+              <input name="payrollYear" type="number" [(ngModel)]="paySlipGenerateForm.period_year" min="2020" max="2100" />
+            </label>
+          </div>
+          <label>Fecha de pago
+            <input name="payrollPaymentDate" type="date" [(ngModel)]="paySlipGenerateForm.payment_date" />
+          </label>
+          <label class="checkbox">
+            <input name="includeSalaryConcept" type="checkbox" [(ngModel)]="paySlipGenerateForm.include_salary_concept" />
+            Incluir concepto salarial base
+          </label>
+
+          <div class="detail-rows">
+            @for (detail of paySlipGenerateForm.details; track trackByIndex($index); let i = $index) {
+              <div class="detail-row">
+                <label>Concepto
+                  <select [name]="'detailConcept' + i" [(ngModel)]="detail.concept_id">
+                    @for (concept of paymentConcepts(); track concept.id) {
+                      <option [ngValue]="concept.id">{{ concept.name }} · {{ concept.type }}</option>
+                    }
+                  </select>
+                </label>
+                <label>Monto
+                  <input [name]="'detailAmount' + i" type="number" [(ngModel)]="detail.amount" min="0" />
+                </label>
+                <button type="button" class="ghost danger" (click)="removePayrollDetail(i)">Quitar</button>
+              </div>
+            }
+          </div>
+
+          <div class="inline-actions compact-actions">
+            <button type="button" class="ghost" (click)="addPayrollDetail()">Añadir concepto</button>
+            <button type="submit">Generar boleta</button>
+          </div>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h3>Consultar boletas</h3>
+        <form class="inline-form" (ngSubmit)="lookupPaySlipById()">
+          <label>Boleta ID
+            <input name="paySlipLookupId" type="number" [(ngModel)]="paySlipLookupId" min="1" />
+          </label>
+          <button type="submit">Consultar</button>
+        </form>
+        <form class="inline-form" (ngSubmit)="listPaySlipsByEmployee()">
+          <label>Funcionario
+            <input name="paySlipListEmployeeId" type="number" [(ngModel)]="paySlipListEmployeeId" min="1" />
+          </label>
+          <button type="submit">Listar</button>
+        </form>
+        <form class="inline-form" (ngSubmit)="listPaySlipsByEmployeeAlias()">
+          <label>Alias funcionario
+            <input name="paySlipAliasEmployeeId" type="number" [(ngModel)]="paySlipAliasEmployeeId" min="1" />
+          </label>
+          <button type="submit">Listar alias</button>
+        </form>
+      </article>
+    </div>
+
+    <article class="trace-panel compact">
+      <header>
+        <p>Respuesta Boletas</p>
+      </header>
+      <pre>{{ payrollTrace() }}</pre>
+    </article>
+  </section>
+
+  <section class="trace-panel workflow-end">
+    <header>
+      <p>Flujo integral</p>
+      <span>Una sola ejecución para validar todos los servicios</span>
+    </header>
+    <pre>{{ workflowTrace() }}</pre>
+  </section>
+</main>
